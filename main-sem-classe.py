@@ -1,37 +1,22 @@
 import os
 import json
-from typing import Literal, Optional
-from uuid import uuid4
 from fastapi import FastAPI, HTTPException
 import random
-from pydantic import BaseModel
-from fastapi.encoders import jsonable_encoder
-
 
 app = FastAPI()
 
-
-#######################  Tratamento dos dados  ########################
-
-
-class Book (BaseModel):
-    #Para que o sistema defina um id automatico
-    book_id: Optional[str] = uuid4().hex
-    name: str
-    price: float
-    gener: Literal["fiction", "non-fiction"]
-
-BOOK_DATABASE = []
-
 BOOKS_FILE = "books.json"
+
+BOOK_DATABASE = [
+    "Harry Potter and the Chamber of Secrets",
+    "Lord of the Rings",
+    "The da Vinci Code"
+]
 
 if os.path.exists(BOOKS_FILE):
     with open (BOOKS_FILE, "r") as f:
         BOOK_DATABASE = json.load(f)
 
-
-
-#############################   Rotas  ###############################
 
 # /    -> Rota de boas vindas
 @app.get("/")
@@ -63,11 +48,8 @@ async def get_random_book():
 
 # /add-book -> adicionar novo livro
 @app.post("/add-book")
-async def add_book(book: Book):
-    book.book_id = uuid4().hex
-    json_book = jsonable_encoder(book)
-    BOOK_DATABASE.append(json_book)
-    
+async def add_book(book: str):
+    BOOK_DATABASE.append(book)
     with open (BOOKS_FILE, "w") as f:
         json.dump(BOOK_DATABASE, f)
     return { "message": f'Book {book} was added'}
